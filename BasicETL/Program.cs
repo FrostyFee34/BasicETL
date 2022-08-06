@@ -1,28 +1,38 @@
-﻿using BasicETL;
+﻿using System.Globalization;
+using BasicETL;
 using BasicETL.Models;
+using CsvHelper;
+using CsvHelper.Configuration;
 
-var config = LoadConfig(@"C:\Users\Aloha\Downloads\etlConfig.cfg");
+var config = ConfigLoader.LoadConfig(@"C:\Users\Aloha\Downloads\etlConfig.cfg");
 
-Config? LoadConfig(string? configPath = null)
+if (config != null)
 {
-    configPath ??= $"{Directory.GetCurrentDirectory()}\\etlConfig.cfg";
+    var csvWatcher = new FileSystemWatcher(config.ObservableFolder, "*.csv");
+    csvWatcher.EnableRaisingEvents = true;
+    csvWatcher.Created += CsvWatcherOnCreated;
 
-    try
-    {
-        var configReader = new FileReader(configPath);
-        var lines = configReader.Read().ToArray();
-        if (lines.Length == 0) throw new InvalidOperationException();
-        var config = new Config
-        {
-            ObservableFolder = lines[0] ?? throw new InvalidOperationException(),
-            OutputFolder = lines[1] ?? throw new InvalidOperationException()
-        };
-        return config;
-    }
-    catch (Exception e)
-    {
-        // TODO Logger
-        return null;
-    }
+    var txtWatcher = new FileSystemWatcher(config.ObservableFolder, "*.txt");
+    txtWatcher.EnableRaisingEvents = true;
+    txtWatcher.Created += TxtWatcherOnCreated;
 
+    new AutoResetEvent(false).WaitOne();
 }
+
+void TxtWatcherOnCreated(object obj, FileSystemEventArgs args)
+{
+    var thread = new Thread(()=>Transformation(args, false));
+    thread.Start();
+}
+
+void CsvWatcherOnCreated(object obj, FileSystemEventArgs args)
+{
+    var thread = new Thread(()=>Transformation(args, true));
+    thread.Start();
+}
+
+void Transformation(FileSystemEventArgs args, bool isCsv)
+{
+    var file = FileReader.ReadFile(args, isCsv);
+}
+
