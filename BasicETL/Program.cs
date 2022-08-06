@@ -1,8 +1,4 @@
-﻿using System.Globalization;
-using BasicETL;
-using BasicETL.Models;
-using CsvHelper;
-using CsvHelper.Configuration;
+﻿using BasicETL;
 
 var config = ConfigLoader.LoadConfig(@"C:\Users\Aloha\Downloads\etlConfig.cfg");
 
@@ -21,18 +17,18 @@ if (config != null)
 
 void TxtWatcherOnCreated(object obj, FileSystemEventArgs args)
 {
-    var thread = new Thread(()=>Transformation(args, false));
+    var thread = new Thread(() => Transformation(args, false));
     thread.Start();
 }
 
 void CsvWatcherOnCreated(object obj, FileSystemEventArgs args)
 {
-    var thread = new Thread(()=>Transformation(args, true));
+    var thread = new Thread(() => Transformation(args, true));
     thread.Start();
 }
 
 void Transformation(FileSystemEventArgs args, bool isCsv)
 {
     var file = FileReader.ReadFile(args, isCsv);
+    var outputData = DataTransformer.Transform(file.Records);
 }
-

@@ -3,7 +3,7 @@
 public class Payer
 {
     public string Name { get; set; }
-    public string Payment { get; set; }
-    public string Date { get; set; }
-    public string AccountNumber { get; set; }
+    public decimal Payment { get; set; }
+    public DateOnly Date { get; set; }
+    public long AccountNumber { get; set; }
 }

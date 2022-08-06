@@ -1,8 +1,8 @@
 ﻿namespace BasicETL.Models.Input;
 
-public class InputFile
+public class InputData
 {
-    public string? Name { get; set; }
+    public string? FileName { get; set; }
     public List<InputDataRecord> Records { get; set; }
     public DateTime TimeOfAddition { get; set; }
 }

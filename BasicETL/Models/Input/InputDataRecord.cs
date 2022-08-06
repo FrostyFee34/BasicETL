@@ -13,6 +13,7 @@ public class InputDataRecord
     [Index(3)]
     public decimal Payment { get; set; }
     [Index(4)]
+    [Format("yyyy-dd-mm")]
     public DateOnly Date { get; set; }
     [Index(5)]
     public long AccountNumber { get; set; }

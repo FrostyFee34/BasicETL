@@ -7,18 +7,19 @@ namespace BasicETL;
 
 public class FileReader
 {
-    public static InputFile ReadFile(FileSystemEventArgs args, bool isCsv)
+    public static InputData ReadFile(FileSystemEventArgs args, bool isCsv)
     {
         var csvConfig = new CsvConfiguration(CultureInfo.InvariantCulture)
         {
-            HasHeaderRecord = isCsv
+            HasHeaderRecord = isCsv,
+
         };
         using var reader = new StreamReader(args.FullPath);
         using var csv = new CsvReader(reader, csvConfig);
-        var inputFile = new InputFile()
+        var inputFile = new InputData
         {
             Records = new List<InputDataRecord>(),
-            Name = args.Name,
+            FileName = args.Name,
             TimeOfAddition = DateTime.Now
         };
         try
@@ -26,8 +27,11 @@ public class FileReader
             while (csv.Read())
             {
                 var record = csv.GetRecord<InputDataRecord>();
+                if (string.IsNullOrEmpty(record.FirstName) && string.IsNullOrEmpty(record.LastName))
+                    throw new InvalidOperationException(csv.CurrentIndex.ToString());
                 inputFile.Records.Add(record);
             }
+
             return inputFile;
         }
         catch (Exception e)
@@ -36,7 +40,5 @@ public class FileReader
             Console.WriteLine(e);
             throw;
         }
-
-      
     }
 }
