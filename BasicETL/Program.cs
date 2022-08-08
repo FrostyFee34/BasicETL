@@ -1,34 +1,27 @@
-﻿using BasicETL;
+﻿using BasicETL.Logic.Exceptions;
+using BasicETL.Logic.Models;
+using BasicETL.UI;
+using Microsoft.Extensions.Configuration.Json;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
-var config = ConfigLoader.LoadConfig(@"C:\Users\Aloha\Downloads\etlConfig.cfg");
+var host = Host.CreateDefaultBuilder(args)
+    .UseWindowsService((options) => { options.ServiceName = "BasicETL"; })
+    .ConfigureServices((hostContext, services) =>
+    {
+        services.AddHostedService<FolderWorker>();
+        services.Configure<AppSettings>(hostContext.Configuration.GetSection("AppSettings"));
+    }).Build();
 
-if (config != null)
+var config = host.Services.GetRequiredService<IOptions<AppSettings>>().Value;
+
+if (config == null || string.IsNullOrEmpty(config.ObservableFolder) ||
+    string.IsNullOrEmpty(config.OutputFolder))
 {
-    var csvWatcher = new FileSystemWatcher(config.ObservableFolder, "*.csv");
-    csvWatcher.EnableRaisingEvents = true;
-    csvWatcher.Created += CsvWatcherOnCreated;
-
-    var txtWatcher = new FileSystemWatcher(config.ObservableFolder, "*.txt");
-    txtWatcher.EnableRaisingEvents = true;
-    txtWatcher.Created += TxtWatcherOnCreated;
-
-    new AutoResetEvent(false).WaitOne();
+    Console.WriteLine(new AppSettingsException().Message);
+    return;
 }
 
-void TxtWatcherOnCreated(object obj, FileSystemEventArgs args)
-{
-    var thread = new Thread(() => Transformation(args, false));
-    thread.Start();
-}
-
-void CsvWatcherOnCreated(object obj, FileSystemEventArgs args)
-{
-    var thread = new Thread(() => Transformation(args, true));
-    thread.Start();
-}
-
-void Transformation(FileSystemEventArgs args, bool isCsv)
-{
-    var file = FileReader.ReadFile(args, isCsv);
-    var outputData = DataTransformer.Transform(file.Records);
-}
+host.Run();

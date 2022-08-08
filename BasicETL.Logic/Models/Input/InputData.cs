@@ -1,4 +1,4 @@
-﻿namespace BasicETL.Models.Input;
+﻿namespace BasicETL.Logic.Models.Input;
 
 public class InputData
 {

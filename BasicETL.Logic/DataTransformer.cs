@@ -1,18 +1,29 @@
-﻿using BasicETL.Models.Input;
-using BasicETL.Models.Output;
+﻿using BasicETL.Logic.Models.Input;
+using BasicETL.Logic.Models.Output;
 
-namespace BasicETL;
+namespace BasicETL.Logic;
 
-public static class DataTransformer
+public class DataTransformer
 {
-    public static OutputData Transform(IList<InputDataRecord> records)
+    private readonly InputData _inputData;
+    private readonly Meta _meta;
+
+    public DataTransformer(InputData inputData, Meta meta)
+    {
+        _inputData = inputData;
+        _meta = meta;
+    }
+
+    private IEnumerable<InputDataRecord> Records => _inputData.Records;
+
+    public OutputData Transform()
     {
         var outputData = new OutputData
         {
             Records = new List<OutputRecord>()
         };
 
-        var cityNames = records.Select(r =>
+        var cityNames = Records.Select(r =>
         {
             var index = r.Address.IndexOf(',');
             r.Address = r.Address[..index];
@@ -21,7 +32,7 @@ public static class DataTransformer
 
         foreach (var cityName in cityNames)
         {
-            var cityRecords = records.Where(r => r.Address.StartsWith(cityName));
+            var cityRecords = Records.Where(r => r.Address.StartsWith(cityName));
             var cityTotal = cityRecords.Select(r => r.Payment)
                 .Aggregate(decimal.Add);
             var cityServices = new List<Service>();
@@ -38,6 +49,7 @@ public static class DataTransformer
                 {
                     var cityServicePayerRecord =
                         cityServiceRecords.First(r => cityServicePayerName == $"{r.FirstName} {r.LastName}");
+
                     var payer = new Payer
                     {
                         Name = cityServicePayerName,
@@ -66,6 +78,7 @@ public static class DataTransformer
             outputData.Records.Add(outputRecord);
         }
 
+        _meta.FileTransformed();
         return outputData;
     }
 }

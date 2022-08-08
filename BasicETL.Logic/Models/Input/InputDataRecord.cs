@@ -1,6 +1,6 @@
 ﻿using CsvHelper.Configuration.Attributes;
 
-namespace BasicETL.Models.Input;
+namespace BasicETL.Logic.Models.Input;
 
 public class InputDataRecord
 {

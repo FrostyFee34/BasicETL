@@ -1,4 +1,4 @@
-﻿namespace BasicETL.Models.Output;
+﻿namespace BasicETL.Logic.Models.Output;
 
 public class Payer
 {

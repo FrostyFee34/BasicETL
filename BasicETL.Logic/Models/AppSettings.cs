@@ -1,6 +1,6 @@
-﻿namespace BasicETL.Models;
+﻿namespace BasicETL.Logic.Models;
 
-public class Config
+public class AppSettings
 {
     public string ObservableFolder { get; set; }
     public string OutputFolder { get; set; }
